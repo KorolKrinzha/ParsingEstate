@@ -40,8 +40,12 @@ with open('./log/auction.log') as logfile:
         print(logfile)
         
 auction_object_link = "https://auction-house.ru/catalog/l-30000111803/"
-filename = auction_object_link.split("/")[-1]
-print(filename)
+auction_object_data['realEstate']['link'] = auction_object_link
+site_id = str(uuid4())
+site_id = site_id.replace('-', "")
+auction_object_data['id'] = f'{auction_id}_{site_id}'
+
+filename = auction_object_link.split("/")[-1] if len(auction_object_link.split("/")[-1])!=0 else auction_object_link.split("/")[-2]
 url = auction_object_link
 page = requests.get(url)
 
@@ -76,7 +80,6 @@ try:
     addresses = address_complete.split(",")
     
     for address_piece in addresses:
-        print(address_piece)
         if address_piece.startswith(" г.") or address_piece.startswith("г."):
             auction_object_data['address']['city'] = address_piece
         if address_piece.startswith(" ул.") or address_piece.startswith("ул."):
@@ -112,7 +115,6 @@ price_int = int(price_string)
 # общая цена
 auction_object_data['realEstate']['totalPrice'] = price_int
 
-print(filename)
 with open(f'./auction_json/{filename}.json', 'w', encoding='utf-8') as fp:
     json_data = json.dumps(auction_object_data,ensure_ascii=False, indent=4)
     fp.write(json_data)

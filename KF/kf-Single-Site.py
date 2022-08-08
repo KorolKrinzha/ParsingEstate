@@ -1,7 +1,6 @@
 import requests
 import json
 from bs4 import BeautifulSoup
-from base64 import urlsafe_b64encode
 import os
 from uuid import uuid4
 
@@ -11,7 +10,6 @@ if not os.path.exists('./kf_json'):
     
 kf_id = str(uuid4())
 kf_id = kf_id.replace('-',"")
-print(kf_id)
 
 with open('./log/pm2.log') as logfile:
     for kf_object_link in logfile:
@@ -77,7 +75,6 @@ with open('./log/pm2.log') as logfile:
                 
             kf_object_data['address']['country'] = "Россия"
             kf_object_data['address']['city'] = "Москва"
-            print(address_complete)
             try:
                 kf_object_data['address']['region'] = address_complete[0]+" "+address_complete[1]
                 kf_object_data['address']['street'] = address_complete[2]+ " "+ address_complete[3]
@@ -129,14 +126,14 @@ with open('./log/pm2.log') as logfile:
                     item_text = detail.find('span')
                     if item_text.string!=None:
                         details_complete.append(item_text.string)
+                detail_count = 0
+                for key,value in kf_object_data['details'].items():
+                    try:
+                        kf_object_data['details'][key] = details_complete[detail_count]
+                        detail_count+=1
+                    except:
+                        break
 
-                kf_object_data['details']['Продажа'] = details_complete[0]
-                kf_object_data['details']['Готово'] = details_complete[1]
-                kf_object_data['details']['Площадь, м²'] = details_complete[2]
-                kf_object_data['details']['Количество квартир'] = details_complete[3]
-                kf_object_data['details']['Высота потолков'] = details_complete[4]
-                kf_object_data['details']['Адрес'] = details_complete[5]
-                kf_object_data['details']['Метро'] = details_complete[6]
 
 
             except Exception as e:

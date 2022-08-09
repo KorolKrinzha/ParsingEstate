@@ -4,3 +4,6 @@ venv
 
 /auction-house/auction_json
 /auction-house/log
+
+/rentavik/rentavik_json
+/rentavik/log

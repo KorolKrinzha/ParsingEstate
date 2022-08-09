@@ -1,61 +1,92 @@
 import requests
 import json
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 import os
 from uuid import uuid4
 
 
-rentavik_object_data = {
-    "id":"",
-    "resource":  {
+
+
+
+from os import listdir
+from os.path import isfile, join
+# берем инфу только об объектах, а не о координатах
+jsonfiles = [f for f in listdir('./rentavik_json') if isfile(join('./rentavik_json', f)) and not f.startswith('GEO')]
+for file in jsonfiles:
+    if os.stat(f'./rentavik_json/{file}')==0:
+        continue
+    with open(f'./rentavik_json/{file}','r+') as json_data:
+        rentavik_object_data = json.loads(json_data.read())
         
-    "title":"rentavik",
-    "link":"",
-    },
-    "realEstate": {
-        "title":"",
-        "description":"",
-        "pricePerSquareMeterMonth":"",
-        "pricePerSquareMeterYear":""
-},
-"address":{
-        "country":"",
-        "city":"",
-        "region":"",
-        "street": ""
-},
-"photo_link": [
-    
-],
-"details": {
-    
-    }
-}
-
-rentavik_object_geo = {
-    "id":"",
-    "latitude": "",
-    "longitude": ""
-}
-
-if not os.path.exists('./rentavik_json'):
-    os.makedir("./rentavik_json")
-    
-rentavik_id = str(uuid4())
-rentavik_id = rentavik_id.replace("-","")
-
-with open ('./log/rentavik.log') as logfile:
-    for rentavik_object_link in logfile:
-        rentavik_object_link = rentavik_object_link.replace('\n','')
-        rentavik_object_link = 'https://www.rentavik.ru/'+rentavik_object_link
+        rentavik_object_link = rentavik_object_data['resource']['link']
+        print(rentavik_object_link)
+        page = requests.get(rentavik_object_link)
+        if page.status_code==404:
+            continue
         
-        filename = rentavik_object_link.split("/")[-1] if len(rentavik_object_link.split("/")[-1])!=0 else rentavik_object_link.split("/")[-2]
+        soup = BeautifulSoup(page.content, "html.parser")
+        # ОПИСАНИЕ 
+        
+        paragraph_blacklist = ['Пользовательское соглашение','Политика конфидициальности','Согласие на получение рекламных рассылок']
+        for suspect_p in soup.find_all('p'):
+            if suspect_p.get('href')==None and suspect_p.get('class')==None and suspect_p.string!=None\
+                and not (suspect_p.string in paragraph_blacklist):
+                    rentavik_object_data['realEstate']['description'] = suspect_p.string
+                    break
+                
+        
+        # ДЕТАЛИ 
+        details_suspects = soup.find_all('div', attrs={"class":"cell"})
+        for i in range(len(details_suspects)):
+            detail_key = details_suspects[i].find('div', attrs={'class':'page-table__label'}) 
+            if  detail_key!=None:
+                
+                detail_value = details_suspects[i+1].find('div', attrs={'class':'page-table__value'})    
+                if detail_value!=None: 
+                    detail_key = detail_key.string
+                    detail_key = detail_key.replace('\r','').replace('\n','').strip()
+                    
+                    detail_value = detail_value.string
+                    detail_value = detail_value.replace('\r','').replace('\n','').strip()
+                    rentavik_object_data['details'][detail_key] = detail_value
+                    
+        # ПИКЧИ
+        slides_tag =[slides.find('div', attrs={'class':'clients-slide__image'}) 
+                     for slides in soup.find_all('div', attrs={"class":"clients-slide"})]
+        for slide_tag in slides_tag:
+            try:
+                img_source = slide_tag.find('img')['src']
+                img_link = 'https://www.rentavik.ru/'+img_source
+                rentavik_object_data['photo_link'].append(img_link)
+            except: continue
+            
+        # ЦЕНА
+        for price_info in soup.find_all('div', attrs={'class':'filterresults-offer-prices__value'}):
+            price_text = " ".join(price_info.find_all(text=lambda t: not isinstance(t, Comment)))
+            price_text = price_text.replace('\n', '')
+            if 'руб./м 2  в год' in price_text:
+                price_text = price_text.replace('руб./м 2  в год', '').replace(' ', '')
+                rentavik_object_data['realEstate']['pricePerSquareMeterYear'] = int(price_text)
+            if 'руб./мес' in price_text:
+                price_text = price_text.replace('руб./мес', '').replace(' ', '')
+                rentavik_object_data['realEstate']['pricePerMonth'] = int(price_text)
+        
+        json_data_update = json.dumps(rentavik_object_data,ensure_ascii=False, indent=4)
+        print(json_data_update)
+        json_data.write(json_data_update)
+        
 
-        print(filename)
-filename = ''
-page = requests.get('https://www.rentavik.ru//arenda/novostroevskaya-8/')
-if page.status_code==404:
-    with open(f'./rentavik_json/NOTFOUND_{filename}.json', 'w', encoding='utf-8') as fp:
-        fp.write('404 NOT FOUND')    
-        # continue
-soup = BeautifulSoup(page.content, "html.parser")
+                
+
+                
+        
+        
+        
+    
+    
+    
+        
+
+
+
+# КООРДИНАТЫ

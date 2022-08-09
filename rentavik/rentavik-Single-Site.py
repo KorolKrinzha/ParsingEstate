@@ -15,7 +15,7 @@ jsonfiles = [f for f in listdir('./rentavik_json') if isfile(join('./rentavik_js
 for file in jsonfiles:
     if os.stat(f'./rentavik_json/{file}')==0:
         continue
-    with open(f'./rentavik_json/{file}','r+') as json_data:
+    with open(f'./rentavik_json/{file}','r+', encoding='utf-8') as json_data:
         rentavik_object_data = json.loads(json_data.read())
         
         rentavik_object_link = rentavik_object_data['resource']['link']
@@ -72,6 +72,7 @@ for file in jsonfiles:
                 rentavik_object_data['realEstate']['pricePerMonth'] = int(price_text)
         
         json_data_update = json.dumps(rentavik_object_data,ensure_ascii=False, indent=4)
+        json_data.seek(0)
         print(json_data_update)
         json_data.write(json_data_update)
         

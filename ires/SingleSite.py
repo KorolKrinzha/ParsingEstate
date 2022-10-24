@@ -75,9 +75,9 @@ def parsePage(ires_object_link,ires_id):
             if p_list[i].find('strong')!=None:
                 if p_list[i].find('strong').contents==['Расположение:']:
                     # область
-                    area = p_list[i].find('a').contents[0]
+                    region = p_list[i].find('a').contents[0]
                     ires_object_data['address']['country'] = "Россия"
-                    ires_object_data['address']['region'] = str(area)
+                    ires_object_data['address']['region'] = str(region)
         except: pass
         
         # ПЛОЩАДЬ

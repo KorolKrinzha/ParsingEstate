@@ -1,33 +1,23 @@
 import requests
 import json
 from bs4 import BeautifulSoup
-import os
 from uuid import uuid4
 
 
-if not os.path.exists('./kf_json'):
-    os.makedirs('./kf_json')
-    
-kf_id = str(uuid4())
-kf_id = kf_id.replace('-',"")
 
-with open('./log/pm2.log') as logfile:
-    for kf_object_link in logfile:
-        kf_object_link = kf_object_link.replace('\n', '')
-        filename = kf_object_link.split('/')[-1]
 
     
-# kf_object_link = '/gorod/zhilye-kompleksy/woods-id47504'
-        # try:
-        try:
-            url = f"https://kf.expert{kf_object_link}"
-            page = requests.get(url)  # This page outputs the HTML code of the page.
-            if page.status_code==404:
-                with open(f'./kf_json/NOTFOUND_{filename}.json', 'w', encoding='utf-8') as fp:
-                    fp.write('404 NOT FOUND')    
-                    continue
 
-                
+def parsePage(kf_object_link, kf_id):
+    filename = kf_object_link.split('/')[-1]
+
+
+    try:
+        url = f"https://kf.expert{kf_object_link}"
+        page = requests.get(url)  # This page outputs the HTML code of the page.
+        if page.status_code!=404 and page.status_code!=500:
+
+            
 
             soup = BeautifulSoup(page.content, "html.parser")
 
@@ -60,7 +50,6 @@ with open('./log/pm2.log') as logfile:
             
             site_id = str(uuid4())
             site_id = site_id.replace('-', "")
-            print(site_id)
             kf_object_data["id"] = f'{kf_id}_{site_id}'
 
             # НАЗВАНИЕ
@@ -83,7 +72,7 @@ with open('./log/pm2.log') as logfile:
 
                 
 
-            # # ПИКЧИ
+            # ПИКЧИ
             pictures = set()
             for picture_container in soup.find_all('picture', class_='swiper-zoom-container'):
                 kf_object_data['photo_link'].append(picture_container.find('img')['data-src'])
@@ -151,17 +140,10 @@ with open('./log/pm2.log') as logfile:
 
 
 
-            with open(f'./kf_json/{filename}.json', 'w', encoding='utf-8') as fp:
+            with open(f'./result/{filename}.json', 'w', encoding='utf-8') as fp:
                 json_data = json.dumps(kf_object_data, 
                                     ensure_ascii=False, indent=4)
                 fp.write(json_data)  
         
         
-        except Exception as error:
-            print(error)
-            with open(f'./kf_json/ERROR_{filename}.json', 'w', encoding='utf-8') as fp:
-                fp.write(str(error))    
-
-
-
-            
+    except Exception as error: pass

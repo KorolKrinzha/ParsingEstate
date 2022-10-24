@@ -4,8 +4,9 @@ from bs4 import BeautifulSoup
 from uuid import uuid4
 import os
 from SingleSite import parsePage # функция для парсинга страницы
-from progressbar import ProgressBar
 
+# для отслеживания прогресса
+from progressbar import ProgressBar
 pbar = ProgressBar()
 
 
@@ -104,7 +105,6 @@ for pageNumber in pbar(range(1, 191 + 1)):
                     filename = rentavik_object_link.split(
                         "/")[-1] if len(rentavik_object_link.split("/")[-1]) != 0 else rentavik_object_link.split("/")[-2]
 
-                    print(f"Работа с объектом ${filename}")
                     # записываем геолокацию и больше не трогаем
                     with open(f'./result/GEO_{filename}.json', 'w', encoding='utf-8') as fp:
                         # записываем в json_data  json с геолокацией 

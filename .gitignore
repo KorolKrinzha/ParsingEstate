@@ -1,11 +1,16 @@
 __pycache__
 venv
-/KF/kf_json
 
-/auction-house/auction_json
+# https://kf.expert
+/KF/result
+
+# https://www.auction-house.ru
+/auction-house/result
 /auction-house/log
 
-/rentavik/rentavik_json
+# https://www.rentavik.ru
+/rentavik/result
 /rentavik/log
 
+# черновые сайты
 /DRAFTS

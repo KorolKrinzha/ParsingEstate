@@ -12,5 +12,8 @@ venv
 /rentavik/result
 /rentavik/log
 
+# https://ires-group.ru/
+/ires/result
+
 # черновые сайты
 /DRAFTS

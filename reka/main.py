@@ -23,7 +23,7 @@ page = requests.get(url)
 
 soup = BeautifulSoup(page.content,'lxml')
 a_link_list = soup.find_all('a', attrs={'class': 'link'})
-for a_llink in a_link_list:
+for a_llink in pbar (a_link_list):
     try:
         parsePage('https://reka.fm'+str(a_llink['href']),reka_id)
     except: pass

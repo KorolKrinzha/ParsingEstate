@@ -19,7 +19,9 @@ reka_object_data = {
 },
 "address":{
     "country":"",
-    "region":""
+    "city":"",
+    "region":"",
+    "street": ""
 },
 "photo_link": [
     
@@ -56,13 +58,20 @@ def parsePage(reka_object_link,reka_id):
     # ОПИСАНИЕ
     description_div = soup.find_all("div", attrs={"class": "lot"})
     for span in description_div:
-        # print(span)
         
         try:
-            print(span.contents)
-            if len(span.contents[0])>10:
-                print(span)
-        except: pass
+            # span находится в span, который в свою очередь находится в другом span
+            for i in range(len(span.contents)):
+                if len(str(span.contents[i]))>30: 
+                    # print(span.contents[i].contents[1].contents[0])
+                    for j in range(len(span.contents[i])):
+                        if len (str(span.contents[i].contents[j]))> 30:
+                            reka_object_data['realEstate']['description'] = str(span.contents[i].contents[j].contents[0])
+                            break
+                            
+                    break
+        except Exception as e: pass 
+    
     
     span_list = soup.find_all('span')
     for i  in range (len(span_list)):
@@ -83,15 +92,28 @@ def parsePage(reka_object_link,reka_id):
         except Exception as e: pass
         
         
-        # КАРТИНКИ
-        pictures = soup.find_all('picture')
-        for picture in pictures:
-            try:
-                if 'веб' not in picture.find('img')['src']:
-                    reka_object_data['photo_link'].append('https://www.reka.fm'+picture.find('img')['src'])
-                    
-            except: pass
-            
+    # КАРТИНКИ
+    pictures = soup.find_all('picture')
+    for picture in pictures:
+        try:
+            if 'веб' not in picture.find('img')['src']:
+                reka_object_data['photo_link'].append('https://www.reka.fm'+picture.find('img')['src'])
+                
+        except: pass
+        
+    # АДРЕС
+    address_tag = soup.find('p', attrs={"class": "address"})
+    address = address_tag.contents[0]
+    reka_object_data["address"]["country"] = "Россия"
+    try:
+        # примерный формат ответа: г. Пододьск, мкр. Климовск, ул. Ленина, д.1
+        # делим запятыми: город, регион, все остальное - улица
+        reka_object_data["address"]["city"] = address.split(',')[0]
+        reka_object_data["address"]["region"] = address.split(',')[1]
+        # записываем все остальное в улицу. Преобразуем в строку
+        reka_object_data["address"]["street"]= ''.join(address.split(',')[2:])
+    except: reka_object_data["address"]["region"] = address
+        
         
     # ГЕОЛОКАЦИЯ - НЕ ДЕЙСТВИТЕЛЬНА - ВЕДЕТ В ОФИС КОМПАНИИ 
     # a_geo_list = soup.find_all('a', attrs={"class": "ui-linkFade"} ) 
@@ -106,4 +128,9 @@ def parsePage(reka_object_link,reka_id):
     #             reka_object_data['longitude'] = coordinates.split(',')[1]
     #     except: pass
     
-parsePage('https://www.reka.fm/catalog/proizvodstvennyy-kompleks-kmz/', '123')
+    with open(f'./result/{filename}.json', 'w', encoding='utf-8') as fp:
+        # записываем в json_data значения основного json
+        json_data = json.dumps(
+            reka_object_data, ensure_ascii=False, indent=4)
+        fp.write(json_data)
+    

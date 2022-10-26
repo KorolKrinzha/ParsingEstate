@@ -1,8 +1,8 @@
 import requests
 import json
 from bs4 import BeautifulSoup
-from SingleSite import parsePage
 import os
+from SingleSite import parsePage
 
 
 # для отслеживания прогресса

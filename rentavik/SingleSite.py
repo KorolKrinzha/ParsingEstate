@@ -86,5 +86,4 @@ def parsePage(filename):
         json_data_update = json.dumps(
             rentavik_object_data, ensure_ascii=False, indent=4)
         json_data.seek(0)
-        print(json_data_update)
         json_data.write(json_data_update)

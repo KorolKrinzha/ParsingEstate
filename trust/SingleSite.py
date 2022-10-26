@@ -81,10 +81,39 @@ def parsePage( trust_object_data, trust_id):
             trust_object_data['photo_link'].append(photo_link) 
     except: pass
     
-    
+    # ГЕОЛОКАЦИЯ
+    all_scripts = soup.find_all('script')
+    for script in all_scripts:
+        try:
+            # если в скрипте есть константа pinsCoordinates, то там в нем находится локация  
+            # скрипт выглядит следующим образом const pinsCoordinates = [{JSON}]
+            # скрипт представлен в виде строки - избавимся от начальных символов и получим обычный JSON-объект
+            # в этом json есть значения координат, где находится объект
+            if 'pinsCoordinates' in script.contents[0]:
+                script_text = str(script.contents[0])
+                script_text = " ".join(script_text.split())
+                script_text = script_text[24:-1]
+                script_text = script_text.replace("'", '"')
+                
+                script_json = json.loads(script_text)
+                coordinates = script_json[0]['geometry']['coordinates']
+                trust_object_geo['id'] = f'{trust_id}_{site_id}'
+                trust_object_geo['latitude'] = coordinates[0]
+                trust_object_geo['longitude'] = coordinates[1]
+
+        except  Exception as e: pass    
+        
+    with open(f'./result/GEO_{filename}.json', 'w', encoding='utf-8') as fp:
+        json_data = json.dumps(
+            trust_object_geo, ensure_ascii=False, indent=4)
+        fp.write(json_data)        
+
     with open(f'./result/{filename}.json', 'w', encoding='utf-8') as fp:
-        # записываем в json_data значения основного json
         json_data = json.dumps(
             trust_object_data, ensure_ascii=False, indent=4)
         fp.write(json_data)
-    
+ 
+
+
+
+

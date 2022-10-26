@@ -1,7 +1,8 @@
-beautifulsoup4 @ file:///home/linux1/recipes/ci/beautifulsoup4_1610988766420/work
-json5 @ file:///home/conda/feedstock_root/build_artifacts/json5_1600692310011/work
-jsonschema @ file:///tmp/build/80754af9/jsonschema_1602607155483/work
-requests @ file:///tmp/build/80754af9/requests_1608241421344/work
+beautifulsoup4==4.9.3
+jsonpatch==1.22
+jsonpointer==2.0
+jsonschema==3.2.0
+requests==2.22.0
 requests-html==0.10.0
 lxml==4.9.0
 progressbar==2.5
